@@ -1,6 +1,17 @@
 import { useState, useRef, useCallback, useEffect } from "react";
 
-const COLORS = ["#7CB342", "#4ECDC4", "#FF6B6B", "#A78BFA", "#E8B931", "#F06292", "#42A5F5", "#78909C", "#FF8A65", "#AED581"];
+const COLORS = [
+  { name: "Spruce", hex: "#7CB342" },
+  { name: "Willow", hex: "#4ECDC4" },
+  { name: "Alert", hex: "#FF6B6B" },
+  { name: "Magic", hex: "#A78BFA" },
+  { name: "Gold", hex: "#E8B931" },
+  { name: "Pink", hex: "#F06292" },
+  { name: "Blue", hex: "#42A5F5" },
+  { name: "Gray", hex: "#78909C" },
+  { name: "Orange", hex: "#FF8A65" },
+  { name: "Green", hex: "#AED581" }
+];
 
 const TOOLS = {
   select: { id: "select", label: "Select", icon: "↖" },
@@ -49,7 +60,6 @@ export default function ArcBrainstorm() {
     const cy = box.y + box.height / 2;
     const dx = target.x - cx;
     const dy = target.y - cy;
-    const angle = Math.atan2(dy, dx);
     const hw = box.width / 2;
     const hh = box.height / 2;
     const tanA = Math.abs(dy / (dx || 0.001));
@@ -262,60 +272,129 @@ export default function ArcBrainstorm() {
   });
 
   const selectedEl = elements.find(el => el.id === selected);
+  const selectedColor = COLORS.find(c => c.hex === color);
 
   return (
     <div style={{
-      fontFamily: "'Inter', 'SF Pro', -apple-system, sans-serif",
-      background: "#0a0a0f", color: "#e0e0e0",
-      height: "100vh", display: "flex", flexDirection: "column",
-      overflow: "hidden", userSelect: "none",
+      fontFamily: "'JetBrains Mono', 'Inter', -apple-system, sans-serif",
+      background: "#020205",
+      backgroundImage: `radial-gradient(circle at 20% 50%, rgba(78, 205, 196, 0.05) 0%, transparent 50%), 
+                       radial-gradient(circle at 80% 80%, rgba(123, 179, 66, 0.05) 0%, transparent 50%)`,
+      color: "#e0e0e0",
+      height: "100vh",
+      display: "flex",
+      flexDirection: "column",
+      overflow: "hidden",
+      userSelect: "none",
     }}>
+      <style>{`
+        @keyframes glow {
+          0%, 100% { filter: drop-shadow(0 0 10px rgba(78, 205, 196, 0.3)); }
+          50% { filter: drop-shadow(0 0 20px rgba(78, 205, 196, 0.6)); }
+        }
+        .arc-glow { animation: glow 3s ease-in-out infinite; }
+        button:hover { transform: translateY(-1px); }
+        button:active { transform: translateY(0px); }
+      `}</style>
+
       {/* Top Bar */}
       <div style={{
-        display: "flex", alignItems: "center", gap: 8,
-        padding: "8px 12px", background: "#0f0f18",
-        borderBottom: "1px solid #1a1a2e", flexShrink: 0,
+        display: "flex",
+        alignItems: "center",
+        gap: 12,
+        padding: "12px 16px",
+        background: "linear-gradient(180deg, rgba(15, 15, 24, 0.9) 0%, rgba(10, 10, 20, 0.5) 100%)",
+        borderBottom: "1px solid rgba(78, 205, 196, 0.1)",
+        backdropFilter: "blur(10px)",
+        flexShrink: 0,
         flexWrap: "wrap",
       }}>
         {/* Logo */}
         <div style={{
-          fontSize: 14, fontWeight: 800, marginRight: 8,
-          background: "linear-gradient(135deg, #4ECDC4, #7CB342)",
-          WebkitBackgroundClip: "text", WebkitTextFillColor: "transparent",
-        }}>ARC ✦ Brainstorm</div>
+          fontSize: 16,
+          fontWeight: 900,
+          letterSpacing: -0.5,
+          background: "linear-gradient(135deg, #4ECDC4 0%, #7CB342 50%, #E8B931 100%)",
+          WebkitBackgroundClip: "text",
+          WebkitTextFillColor: "transparent",
+          textShadow: "0 0 20px rgba(78, 205, 196, 0.3)",
+          marginRight: 4,
+        }}>
+          ARC
+        </div>
+        <div style={{
+          fontSize: 10,
+          color: "#666",
+          fontWeight: 600,
+          letterSpacing: 2,
+          textTransform: "uppercase",
+        }}>BRAINSTORM</div>
 
-        <div style={{ width: 1, height: 24, background: "#1a1a2e", margin: "0 4px" }} />
+        <div style={{
+          width: 1,
+          height: 24,
+          background: "linear-gradient(180deg, transparent, #4ECDC4, transparent)",
+          opacity: 0.3,
+          margin: "0 4px",
+        }} />
 
         {/* Tools */}
-        {Object.values(TOOLS).map(t => (
-          <button
-            key={t.id}
-            onClick={() => { setTool(t.id); setEditingText(null); }}
-            style={{
-              padding: "6px 12px", borderRadius: 6, border: "none", cursor: "pointer",
-              background: tool === t.id ? "#4ECDC420" : "transparent",
-              color: tool === t.id ? "#4ECDC4" : "#666",
-              fontSize: 12, fontWeight: 600, fontFamily: "inherit",
-              display: "flex", alignItems: "center", gap: 4,
-            }}
-          >
-            <span style={{ fontSize: 14 }}>{t.icon}</span>
-            <span style={{ fontSize: 11 }}>{t.label}</span>
-          </button>
-        ))}
+        <div style={{ display: "flex", gap: 2 }}>
+          {Object.values(TOOLS).map(t => {
+            const isActive = tool === t.id;
+            return (
+              <button
+                key={t.id}
+                onClick={() => setTool(t.id)}
+                style={{
+                  padding: "7px 14px",
+                  borderRadius: 6,
+                  border: isActive ? `1px solid #4ECDC4` : "1px solid rgba(78, 205, 196, 0.2)",
+                  cursor: "pointer",
+                  background: isActive ? "rgba(78, 205, 196, 0.15)" : "transparent",
+                  color: isActive ? "#4ECDC4" : "#666",
+                  fontSize: 11,
+                  fontWeight: 700,
+                  fontFamily: "inherit",
+                  display: "flex",
+                  alignItems: "center",
+                  gap: 5,
+                  transition: "all 0.2s ease",
+                  boxShadow: isActive ? "inset 0 0 10px rgba(78, 205, 196, 0.2)" : "none",
+                }}
+              >
+                <span style={{ fontSize: 13 }}>{t.icon}</span>
+                <span style={{ fontSize: 10 }}>{t.label}</span>
+              </button>
+            );
+          })}
+        </div>
 
-        <div style={{ width: 1, height: 24, background: "#1a1a2e", margin: "0 4px" }} />
+        <div style={{
+          width: 1,
+          height: 24,
+          background: "linear-gradient(180deg, transparent, #4ECDC4, transparent)",
+          opacity: 0.3,
+          margin: "0 4px",
+        }} />
 
         {/* Colors */}
-        <div style={{ display: "flex", gap: 3 }}>
+        <div style={{ display: "flex", gap: 4 }}>
           {COLORS.map(c => (
             <div
-              key={c}
-              onClick={() => updateSelectedColor(c)}
+              key={c.hex}
+              onClick={() => updateSelectedColor(c.hex)}
               style={{
-                width: 18, height: 18, borderRadius: 4, cursor: "pointer",
-                background: c, border: color === c ? "2px solid #fff" : "2px solid transparent",
+                width: 22,
+                height: 22,
+                borderRadius: 6,
+                cursor: "pointer",
+                background: c.hex,
+                border: color === c.hex ? `2px solid #fff` : `2px solid rgba(78, 205, 196, 0.2)`,
                 boxSizing: "border-box",
+                transition: "all 0.2s ease",
+                boxShadow: color === c.hex ? `0 0 12px ${c.hex}60` : "none",
+                title: c.name,
               }}
             />
           ))}
@@ -328,34 +407,63 @@ export default function ArcBrainstorm() {
           <button
             onClick={deleteSelected}
             style={{
-              padding: "5px 10px", borderRadius: 5, border: "1px solid #F4433630",
-              background: "#F4433610", color: "#F44336", cursor: "pointer",
-              fontSize: 11, fontFamily: "inherit",
+              padding: "6px 12px",
+              borderRadius: 6,
+              border: "1px solid rgba(244, 67, 54, 0.3)",
+              background: "rgba(244, 67, 54, 0.1)",
+              color: "#FF6B6B",
+              cursor: "pointer",
+              fontSize: 10,
+              fontFamily: "inherit",
+              fontWeight: 600,
+              transition: "all 0.2s ease",
             }}
-          >Delete</button>
+          >⌫ Delete</button>
         )}
         <button
           onClick={clearCanvas}
           style={{
-            padding: "5px 10px", borderRadius: 5, border: "1px solid #FF6B6B20",
-            background: "transparent", color: "#666", cursor: "pointer",
-            fontSize: 11, fontFamily: "inherit",
+            padding: "6px 12px",
+            borderRadius: 6,
+            border: "1px solid rgba(100, 100, 120, 0.2)",
+            background: "transparent",
+            color: "#666",
+            cursor: "pointer",
+            fontSize: 10,
+            fontFamily: "inherit",
+            fontWeight: 600,
+            transition: "all 0.2s ease",
           }}
         >Clear</button>
         <button
           onClick={() => setShowExport(!showExport)}
           style={{
-            padding: "5px 10px", borderRadius: 5, border: "1px solid #4ECDC430",
-            background: "#4ECDC410", color: "#4ECDC4", cursor: "pointer",
-            fontSize: 11, fontFamily: "inherit",
+            padding: "6px 12px",
+            borderRadius: 6,
+            border: `1px solid rgba(78, 205, 196, 0.3)`,
+            background: "rgba(78, 205, 196, 0.1)",
+            color: "#4ECDC4",
+            cursor: "pointer",
+            fontSize: 10,
+            fontFamily: "inherit",
+            fontWeight: 600,
+            transition: "all 0.2s ease",
           }}
-        >{showExport ? "Hide JSON" : "View JSON"}</button>
+        >{showExport ? "Hide" : "View"} JSON</button>
         <button
           onClick={downloadJSON}
           style={{
-            padding: "5px 10px", borderRadius: 5, border: "1px solid #7CB34230",
-            background: "#7CB34215", color: "#7CB342", cursor: "pointer",
-            fontSize: 11, fontWeight: 700, fontFamily: "inherit",
+            padding: "6px 12px",
+            borderRadius: 6,
+            border: "1px solid rgba(123, 179, 66, 0.4)",
+            background: "rgba(123, 179, 66, 0.15)",
+            color: "#7CB342",
+            cursor: "pointer",
+            fontSize: 10,
+            fontWeight: 700,
+            fontFamily: "inherit",
+            transition: "all 0.2s ease",
+            boxShadow: "0 0 8px rgba(123, 179, 66, 0.2)",
           }}
         >⬇ Export</button>
       </div>
@@ -366,7 +474,9 @@ export default function ArcBrainstorm() {
         <svg
           ref={svgRef}
           style={{
-            flex: 1, background: "#0a0a0f", cursor: tool === "box" ? "crosshair" : tool === "arrow" ? "crosshair" : tool === "text" ? "text" : "default",
+            flex: 1,
+            background: `linear-gradient(135deg, #020205 0%, #0a0a15 100%)`,
+            cursor: tool === "box" || tool === "arrow" ? "crosshair" : tool === "text" ? "text" : "default",
             touchAction: "none",
           }}
           onMouseDown={handlePointerDown}
@@ -376,11 +486,18 @@ export default function ArcBrainstorm() {
           onTouchMove={handlePointerMove}
           onTouchEnd={handlePointerUp}
         >
-          {/* Grid */}
+          {/* Animated Grid Background */}
           <defs>
-            <pattern id="grid" width="40" height="40" patternUnits="userSpaceOnUse">
-              <circle cx="1" cy="1" r="0.5" fill="#1a1a2e" />
+            <pattern id="grid" width="50" height="50" patternUnits="userSpaceOnUse">
+              <path d="M 50 0 L 0 0 0 50" fill="none" stroke="#4ECDC4" strokeWidth="0.5" opacity="0.05"/>
             </pattern>
+            <filter id="glow">
+              <feGaussianBlur stdDeviation="3" result="coloredBlur"/>
+              <feMerge>
+                <feMergeNode in="coloredBlur"/>
+                <feMergeNode in="SourceGraphic"/>
+              </feMerge>
+            </filter>
           </defs>
           <rect width="100%" height="100%" fill="url(#grid)" />
 
@@ -396,17 +513,27 @@ export default function ArcBrainstorm() {
             const midX = (start.x + end.x) / 2;
             const midY = (start.y + end.y) / 2;
             const angle = Math.atan2(end.y - start.y, end.x - start.x);
-            const arrowLen = 10;
+            const arrowLen = 12;
             return (
               <g key={a.id}>
-                <line x1={start.x} y1={start.y} x2={end.x} y2={end.y}
-                  stroke={a.color} strokeWidth={2} strokeLinecap="round" />
+                <line
+                  x1={start.x} y1={start.y} x2={end.x} y2={end.y}
+                  stroke={a.color} strokeWidth={2.5} strokeLinecap="round"
+                  filter="url(#glow)" opacity="0.8"
+                />
                 <polygon
                   points={`${end.x},${end.y} ${end.x - arrowLen * Math.cos(angle - 0.4)},${end.y - arrowLen * Math.sin(angle - 0.4)} ${end.x - arrowLen * Math.cos(angle + 0.4)},${end.y - arrowLen * Math.sin(angle + 0.4)}`}
-                  fill={a.color}
+                  fill={a.color} opacity="0.9"
                 />
                 {a.label && (
-                  <text x={midX} y={midY - 6} textAnchor="middle" fontSize={11} fill="#999" fontFamily="inherit">{a.label}</text>
+                  <text
+                    x={midX} y={midY - 8}
+                    textAnchor="middle"
+                    fontSize={10}
+                    fill="#aaa"
+                    fontFamily="inherit"
+                    fontWeight={500}
+                  >{a.label}</text>
                 )}
               </g>
             );
@@ -417,7 +544,8 @@ export default function ArcBrainstorm() {
             <line
               x1={drawingArrow.startPt.x} y1={drawingArrow.startPt.y}
               x2={mousePos.x} y2={mousePos.y}
-              stroke={color} strokeWidth={2} strokeDasharray="6,4" opacity={0.6}
+              stroke={color} strokeWidth={2} strokeDasharray="6,4" opacity="0.5"
+              filter="url(#glow)"
             />
           )}
 
@@ -425,9 +553,9 @@ export default function ArcBrainstorm() {
           {drawingBox && drawingBox.width && (
             <rect
               x={drawingBox.x} y={drawingBox.y}
-              width={drawingBox.width || 0} height={drawingBox.height || 0}
-              fill={color + "15"} stroke={color} strokeWidth={2} strokeDasharray="6,4"
-              rx={8} opacity={0.7}
+              width={drawingBox.width} height={drawingBox.height}
+              fill={color + "10"} stroke={color} strokeWidth={2} strokeDasharray="6,4"
+              rx={8} opacity="0.6" filter="url(#glow)"
             />
           )}
 
@@ -439,51 +567,33 @@ export default function ArcBrainstorm() {
                 <g key={el.id}>
                   <rect
                     x={el.x} y={el.y} width={el.width} height={el.height}
-                    rx={8} ry={8}
-                    fill={el.color + "12"} stroke={isSelected ? "#fff" : el.color + "60"}
-                    strokeWidth={isSelected ? 2 : 1.5}
+                    rx={10} ry={10}
+                    fill={el.color + "08"}
+                    stroke={isSelected ? "#fff" : el.color}
+                    strokeWidth={isSelected ? 2.5 : 2}
+                    filter={isSelected ? "url(#glow)" : "none"}
+                    opacity={isSelected ? 1 : 0.85}
                   />
                   {el.label && (
                     <text
                       x={el.x + el.width / 2} y={el.y + el.height / 2}
                       textAnchor="middle" dominantBaseline="central"
-                      fontSize={13} fill="#e0e0e0" fontFamily="inherit" fontWeight={600}
+                      fontSize={13} fill="#e0e0e0" fontFamily="inherit" fontWeight={700}
                       style={{ pointerEvents: "none" }}
+                      letterSpacing={0.5}
                     >
                       {el.label}
                     </text>
                   )}
                   {/* Resize handle */}
                   {isSelected && (
-                    <rect
-                      x={el.x + el.width - 8} y={el.y + el.height - 8}
-                      width={10} height={10} rx={2}
-                      fill={el.color} opacity={0.8}
+                    <circle
+                      cx={el.x + el.width} cy={el.y + el.height}
+                      r={6}
+                      fill={el.color} opacity={0.9}
+                      filter="url(#glow)"
                       style={{ cursor: "nwse-resize" }}
                     />
-                  )}
-                </g>
-              );
-            }
-            if (el.type === "text") {
-              return (
-                <g key={el.id}>
-                  {isSelected && (
-                    <rect
-                      x={el.x - 2} y={el.y - 2}
-                      width={el.width + 4} height={el.height + 4}
-                      rx={4} fill="none" stroke="#ffffff30" strokeWidth={1} strokeDasharray="4,3"
-                    />
-                  )}
-                  {el.label && editingText !== el.id && (
-                    <text
-                      x={el.x + el.width / 2} y={el.y + el.height / 2}
-                      textAnchor="middle" dominantBaseline="central"
-                      fontSize={13} fill={el.color} fontFamily="inherit" fontWeight={500}
-                      style={{ pointerEvents: "none" }}
-                    >
-                      {el.label}
-                    </text>
                   )}
                 </g>
               );
@@ -498,7 +608,6 @@ export default function ArcBrainstorm() {
           if (!el) return null;
           const svg = svgRef.current;
           if (!svg) return null;
-          const rect = svg.getBoundingClientRect();
           return (
             <input
               autoFocus
@@ -515,10 +624,18 @@ export default function ArcBrainstorm() {
                 top: el.y + (el.type === "box" ? el.height / 2 - 12 : 4),
                 width: el.width - (el.type === "box" ? 16 : 0),
                 height: 24,
-                background: "#12121f", border: `1px solid ${el.color}60`,
-                borderRadius: 4, color: "#e0e0e0", fontSize: 13,
-                fontFamily: "inherit", fontWeight: 600, textAlign: "center",
-                outline: "none", padding: "0 4px",
+                background: "rgba(15, 15, 24, 0.9)",
+                border: `2px solid ${el.color}`,
+                borderRadius: 6,
+                color: "#e0e0e0",
+                fontSize: 13,
+                fontFamily: "inherit",
+                fontWeight: 700,
+                textAlign: "center",
+                outline: "none",
+                padding: "0 4px",
+                boxShadow: `0 0 12px ${el.color}40`,
+                backdropFilter: "blur(5px)",
               }}
             />
           );
@@ -527,49 +644,73 @@ export default function ArcBrainstorm() {
         {/* Properties Panel */}
         {selected && selectedEl && !showExport && (
           <div style={{
-            position: "absolute", right: 12, top: 12, width: 200,
-            background: "#0f0f18", borderRadius: 10, border: "1px solid #1a1a2e",
-            padding: 14,
+            position: "absolute",
+            right: 16,
+            top: 16,
+            width: 220,
+            background: "linear-gradient(135deg, rgba(15, 15, 24, 0.95) 0%, rgba(20, 20, 30, 0.85) 100%)",
+            borderRadius: 12,
+            border: "1px solid rgba(78, 205, 196, 0.2)",
+            padding: 16,
+            backdropFilter: "blur(10px)",
+            boxShadow: "0 8px 32px rgba(0, 0, 0, 0.4), inset 0 0 20px rgba(78, 205, 196, 0.05)",
           }}>
-            <div style={{ fontSize: 10, color: "#555", marginBottom: 8, textTransform: "uppercase", letterSpacing: 0.5 }}>
-              {selectedEl.type === "box" ? "Box" : "Text"} Properties
+            <div style={{
+              fontSize: 9,
+              color: "#4ECDC4",
+              marginBottom: 12,
+              textTransform: "uppercase",
+              letterSpacing: 1.5,
+              fontWeight: 700,
+            }}>
+              {selectedEl.type === "box" ? "Box" : "Text"}
             </div>
-            <div style={{ marginBottom: 8 }}>
-              <div style={{ fontSize: 9, color: "#444", marginBottom: 3 }}>Label</div>
+            <div style={{ marginBottom: 12 }}>
+              <div style={{ fontSize: 8, color: "#888", marginBottom: 4, textTransform: "uppercase" }}>Label</div>
               <input
                 value={selectedEl.label}
                 onChange={(e) => updateLabel(selected, e.target.value)}
                 onFocus={() => setEditingText(null)}
                 placeholder="Type label..."
                 style={{
-                  width: "100%", background: "#080810", border: "1px solid #1a1a2e",
-                  borderRadius: 4, color: "#e0e0e0", fontSize: 12, padding: "6px 8px",
-                  fontFamily: "inherit", outline: "none", boxSizing: "border-box",
+                  width: "100%",
+                  background: "rgba(10, 10, 15, 0.5)",
+                  border: "1px solid rgba(78, 205, 196, 0.2)",
+                  borderRadius: 6,
+                  color: "#e0e0e0",
+                  fontSize: 11,
+                  padding: "7px 10px",
+                  fontFamily: "inherit",
+                  outline: "none",
+                  boxSizing: "border-box",
                 }}
               />
             </div>
-            <div style={{ marginBottom: 8 }}>
-              <div style={{ fontSize: 9, color: "#444", marginBottom: 3 }}>Color</div>
+            <div>
+              <div style={{ fontSize: 8, color: "#888", marginBottom: 6, textTransform: "uppercase" }}>Color</div>
               <div style={{ display: "flex", gap: 3, flexWrap: "wrap" }}>
                 {COLORS.map(c => (
                   <div
-                    key={c}
+                    key={c.hex}
                     onClick={() => {
-                      setColor(c);
-                      setElements(prev => prev.map(el => el.id === selected ? { ...el, color: c } : el));
+                      setColor(c.hex);
+                      setElements(prev => prev.map(el => el.id === selected ? { ...el, color: c.hex } : el));
                     }}
                     style={{
-                      width: 18, height: 18, borderRadius: 3, cursor: "pointer",
-                      background: c,
-                      border: selectedEl.color === c ? "2px solid #fff" : "2px solid transparent",
+                      width: 20,
+                      height: 20,
+                      borderRadius: 4,
+                      cursor: "pointer",
+                      background: c.hex,
+                      border: selectedEl.color === c.hex ? "2px solid #fff" : "2px solid transparent",
                       boxSizing: "border-box",
+                      boxShadow: selectedEl.color === c.hex ? `0 0 8px ${c.hex}60` : "none",
+                      transition: "all 0.2s ease",
                     }}
+                    title={c.name}
                   />
                 ))}
               </div>
-            </div>
-            <div style={{ fontSize: 9, color: "#333" }}>
-              {Math.round(selectedEl.x)}, {Math.round(selectedEl.y)} · {Math.round(selectedEl.width)}×{Math.round(selectedEl.height)}
             </div>
           </div>
         )}
@@ -577,25 +718,57 @@ export default function ArcBrainstorm() {
         {/* JSON Export Panel */}
         {showExport && (
           <div style={{
-            position: "absolute", right: 0, top: 0, bottom: 0, width: 340,
-            background: "#0c0c14", borderLeft: "1px solid #1a1a2e",
-            display: "flex", flexDirection: "column",
+            position: "absolute",
+            right: 0,
+            top: 0,
+            bottom: 0,
+            width: 380,
+            background: "linear-gradient(180deg, rgba(10, 10, 15, 0.98) 0%, rgba(15, 15, 25, 0.95) 100%)",
+            borderLeft: "1px solid rgba(78, 205, 196, 0.2)",
+            display: "flex",
+            flexDirection: "column",
+            backdropFilter: "blur(10px)",
+            boxShadow: "-8px 0 32px rgba(0, 0, 0, 0.5), inset 0 0 20px rgba(78, 205, 196, 0.05)",
           }}>
             <div style={{
-              padding: "12px 16px", borderBottom: "1px solid #1a1a2e",
-              display: "flex", alignItems: "center", justifyContent: "space-between",
+              padding: "14px 18px",
+              borderBottom: "1px solid rgba(78, 205, 196, 0.15)",
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "space-between",
             }}>
-              <span style={{ fontSize: 12, fontWeight: 700, color: "#4ECDC4" }}>JSON Export</span>
-              <button onClick={downloadJSON} style={{
-                padding: "4px 10px", borderRadius: 4, border: "1px solid #7CB34230",
-                background: "#7CB34210", color: "#7CB342", cursor: "pointer",
-                fontSize: 10, fontFamily: "inherit",
-              }}>⬇ Download</button>
+              <span style={{
+                fontSize: 11,
+                fontWeight: 700,
+                color: "#4ECDC4",
+                textTransform: "uppercase",
+                letterSpacing: 1,
+              }}>JSON Export</span>
+              <button
+                onClick={downloadJSON}
+                style={{
+                  padding: "5px 10px",
+                  borderRadius: 5,
+                  border: "1px solid rgba(123, 179, 66, 0.3)",
+                  background: "rgba(123, 179, 66, 0.1)",
+                  color: "#7CB342",
+                  cursor: "pointer",
+                  fontSize: 9,
+                  fontFamily: "inherit",
+                  fontWeight: 700,
+                }}
+              >⬇ Download</button>
             </div>
             <pre style={{
-              flex: 1, margin: 0, padding: 16, overflow: "auto",
-              fontSize: 10, color: "#888", lineHeight: 1.5,
+              flex: 1,
+              margin: 0,
+              padding: 16,
+              overflow: "auto",
+              fontSize: 9,
+              color: "#999",
+              lineHeight: 1.5,
               fontFamily: "'JetBrains Mono', 'SF Mono', monospace",
+              background: "rgba(0, 0, 0, 0.3)",
             }}>
               {exportJSON()}
             </pre>
@@ -605,17 +778,23 @@ export default function ArcBrainstorm() {
 
       {/* Bottom Bar */}
       <div style={{
-        padding: "6px 12px", background: "#0f0f18", borderTop: "1px solid #1a1a2e",
-        display: "flex", alignItems: "center", gap: 12, fontSize: 10, color: "#444",
+        padding: "8px 16px",
+        background: "linear-gradient(180deg, rgba(10, 10, 20, 0.5) 0%, rgba(15, 15, 24, 0.9) 100%)",
+        borderTop: "1px solid rgba(78, 205, 196, 0.1)",
+        display: "flex",
+        alignItems: "center",
+        gap: 12,
+        fontSize: 9,
+        color: "#555",
         flexShrink: 0,
       }}>
-        <span>{elements.length} elements · {arrows.length} connections</span>
-        <span>·</span>
-        <span>Tool: <strong style={{ color: "#666" }}>{TOOLS[tool]?.label}</strong></span>
-        <span>·</span>
-        <span style={{ color: "#333" }}>Draw boxes, connect with arrows, add text. Export JSON for Willow.</span>
+        <span style={{ fontWeight: 700, color: "#666" }} id="stats">{elements.length} elements · {arrows.length} connections</span>
+        <span style={{ opacity: 0.3 }}>|</span>
+        <span>Tool: <strong style={{ color: "#7CB342" }}>{TOOLS[tool]?.label}</strong></span>
+        <span style={{ opacity: 0.3 }}>|</span>
+        <span style={{ color: "#444" }}>Draw boxes, connect with arrows, export JSON for Willow</span>
         <div style={{ flex: 1 }} />
-        <span style={{ color: "#333" }}>Delete: ⌫ · Escape: deselect</span>
+        <span style={{ opacity: 0.5, fontSize: 8 }}>⌫ Delete · Esc Deselect · ↵ Confirm</span>
       </div>
     </div>
   );
